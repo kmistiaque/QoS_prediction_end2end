@@ -4,6 +4,10 @@ import os
 
 app = Flask(__name__)
 
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'healthy'})
+
 # Model file paths
 def get_model_path(name):
     return os.path.join('models', name)
