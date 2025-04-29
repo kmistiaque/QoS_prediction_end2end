@@ -4,3 +4,4 @@ xgboost
 gunicorn
 pandas
 numpy
+flake8
