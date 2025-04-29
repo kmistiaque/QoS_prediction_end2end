@@ -2,39 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ML Model Predictions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QoS Prediction Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .container { max-width: 600px; margin: auto; }
-        .model-result { margin-bottom: 16px; }
-        label { display: block; margin-top: 10px; }
-        input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; }
-        button { margin-top: 16px; padding: 10px 18px; }
-        .results { background: #f3f3f3; padding: 16px; border-radius: 8px; margin-top: 24px; }
+        .prediction-card {
+            transition: transform 0.2s;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+        }
+        .result-excellent { color: #198754; }
+        .result-good { color: #0d6efd; }
+        .result-moderate { color: #ffc107; }
+        .result-poor { color: #dc3545; }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Prediction of QoS with different ML models</h1>
-        <form method="post">
-            <label for="rsrp">RSRP:</label>
-            <input type="number" step="any" id="rsrp" name="rsrp" required>
-            <label for="rsrq">RSRQ:</label>
-            <input type="number" step="any" id="rsrq" name="rsrq" required>
-            <label for="snr">SNR:</label>
-            <input type="number" step="any" id="snr" name="snr" required>
-            <button type="submit">Predict</button>
-        </form>
-        {% if predictions %}
-        <div class="results">
-            <h2>Results</h2>
-            {% for model, result in predictions.items() %}
-                <div class="model-result">
-                    <strong>{{ model }}:</strong> {{ result }}
-                </div>
-            {% endfor %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">QoS Prediction System</a>
         </div>
-        {% endif %}
+    </nav>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Network Quality Prediction</h2>
+                        <form method="post" id="prediction-form">
+                            <div class="mb-3">
+                                <label for="rsrp" class="form-label">RSRP (Reference Signal Received Power)</label>
+                                <div class="input-group">
+                                    <input type="number" step="any" class="form-control" id="rsrp" name="rsrp" 
+                                           required placeholder="Enter RSRP value"
+                                           data-toggle="tooltip" data-placement="top"
+                                           title="Typical range: -140 to -44 dBm">
+                                    <span class="input-group-text">dBm</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rsrq" class="form-label">RSRQ (Reference Signal Received Quality)</label>
+                                <div class="input-group">
+                                    <input type="number" step="any" class="form-control" id="rsrq" name="rsrq" 
+                                           required placeholder="Enter RSRQ value"
+                                           data-toggle="tooltip" data-placement="top"
+                                           title="Typical range: -19.5 to -3 dB">
+                                    <span class="input-group-text">dB</span>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="snr" class="form-label">SNR (Signal-to-Noise Ratio)</label>
+                                <div class="input-group">
+                                    <input type="number" step="any" class="form-control" id="snr" name="snr" 
+                                           required placeholder="Enter SNR value"
+                                           data-toggle="tooltip" data-placement="top"
+                                           title="Typical range: -20 to 30 dB">
+                                    <span class="input-group-text">dB</span>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Predict Quality</button>
+                            </div>
+                        </form>
+
+                        <div class="loading mt-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Processing predictions...</p>
+                        </div>
+
+                        {% if predictions %}
+                        <div class="results mt-4">
+                            <h3 class="text-center mb-4">Prediction Results</h3>
+                            <div class="row row-cols-1 row-cols-md-2 g-4">
+                                {% for model, result in predictions.items() %}
+                                <div class="col">
+                                    <div class="card h-100 prediction-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ model }}</h5>
+                                            <p class="card-text h4 mt-3 {% if 'Excellent' in result %}result-excellent
+                                                                        {% elif 'Good' in result %}result-good
+                                                                        {% elif 'Moderate' in result %}result-moderate
+                                                                        {% elif 'Poor' in result %}result-poor{% endif %}">
+                                                {{ result }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Initialize tooltips
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        // Show loading spinner on form submit
+        document.getElementById('prediction-form').addEventListener('submit', function() {
+            document.querySelector('.loading').style.display = 'block';
+        });
+    </script>
 </body>
 </html>
