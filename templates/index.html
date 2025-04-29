@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ML Model Predictions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: auto; }
+        .model-result { margin-bottom: 16px; }
+        label { display: block; margin-top: 10px; }
+        input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; }
+        button { margin-top: 16px; padding: 10px 18px; }
+        .results { background: #f3f3f3; padding: 16px; border-radius: 8px; margin-top: 24px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prediction of QoS with different ML models</h1>
+        <form method="post">
+            <label for="rsrp">RSRP:</label>
+            <input type="number" step="any" id="rsrp" name="rsrp" required>
+            <label for="rsrq">RSRQ:</label>
+            <input type="number" step="any" id="rsrq" name="rsrq" required>
+            <label for="snr">SNR:</label>
+            <input type="number" step="any" id="snr" name="snr" required>
+            <button type="submit">Predict</button>
+        </form>
+        {% if predictions %}
+        <div class="results">
+            <h2>Results</h2>
+            {% for model, result in predictions.items() %}
+                <div class="model-result">
+                    <strong>{{ model }}:</strong> {{ result }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
